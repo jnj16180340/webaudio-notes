@@ -1,8 +1,27 @@
 # webaudio-notes
 
+## WebAudio inspection
+
+1. Record to disk using OfflineAudioContext
+    - Simplest case??? (maybe not)
+    - Accomplishes goals if we can also read from the file
+
+2. Record to disk using separate stream processing server (Node, Elixir etc)
+    - More similar to what CloudSpeech sees
+
+Let's go with (2) for the sake of simple disk writes.
+
+### General concerns
+
+- Can't set sample rate of AudioContext. Any resampling should happen in an offline audio context.
+- BUT, we can set sample rate of MICROPHONE using constraints. One way is to hook up a microphone with desired sample rate to the webaudio graph, set its gain to zero, and roll with it :)
+
 ### Audio encoding
 
 - LPCM16 `WAV` files are just raw LPCM16 audio data prepended with a header. Add/strip this header as necessary.
+    - Find out bitrate, sampling rate etc. of stream
+    - Write WAV header
+    - Write data...
 
 - FLAC stream compression supports LPCM16 (FLAC does not support floats)
     - https://www.npmjs.com/package/emflac
