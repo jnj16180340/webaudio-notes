@@ -52,6 +52,7 @@ We can only interact with the WebAudio stream from a ScriptProcessorNode, which 
 ### Google CloudSpeech
 > Audio input can be captured by an application’s microphone or sent from a pre-recorded audio file. Multiple audio encodings are "supported," including FLAC, AMR, PCMU and Linear-16.
 [See Google dox](https://cloud.google.com/speech/reference/rpc/google.cloud.speech.v1beta1#google.cloud.speech.v1beta1.RecognitionConfig.AudioEncoding)
+
 | Encoding | Support | Notes |
 | --- | --- | --- |
 | `ENCODING_UNSPECIFIED` | Not specified. Will return result google.rpc.Code.INVALID_ARGUMENT. |
