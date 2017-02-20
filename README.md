@@ -30,7 +30,7 @@ We can only interact with the WebAudio stream from a ScriptProcessorNode, which 
 ### Audio encoding
 
 - We can play raw (headerless) audio with `sox`
-- AVOID using `sox -d` instead of `play` because it's easy to overwrite files!
+- Use `play` instead of `sox -d` because it's easy to overwrite files!
 - `play -r 44100 -e floating-point -b 32 -c 1 -t raw ./1487623877259`
 - If we set 2 channels where there are really 1, it sounds octave-doubled.
 
