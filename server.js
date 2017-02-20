@@ -5,6 +5,7 @@
 
 const WebSocket = require('ws');
 const fs = require('fs'); // don't really need to import this tho...
+const exec = require('child_process').exec;
 
 // use websocket compression "ONLY if REALLY needed", overhead in memory+performance
 const wss = new WebSocket.Server({
@@ -16,13 +17,18 @@ const wss = new WebSocket.Server({
 // Message: Write to file (ignore ordering for now!)
 // Close: Flush + close file
 wss.on('connection', function connection(ws) {
+  // If we wanted to communicate audio info (channels, bitrate etc) we would do it here
+  // For now, we assume 44.1kHz/float32/mono
+  // Realistically, only sample rate may change unexpectedly
+  // because sample rate is automatically set by client based on *everything*
+  // however client may query sample rate and send it.
   console.log('New connection');
-  let filename = `${Date.now().toString()}.raw`; // ms timestamp
+  let filenamebase = Date.now().toString();
+  let filename = `${filenamebase}.raw`; // ms timestamp
   
   // Character encoding is important. fs defaults to utf-8
   let outstream = fs.createWriteStream(filename, {flags:'w'});
-  // we could write a wav header here, or wait until the end
-  // we could put writing defs, on message defs inside outstream.on('open', fn...) callback
+  
   outstream.on('open', function(){
     console.log(`Opened file ${filename}`);
   })
@@ -37,9 +43,21 @@ wss.on('connection', function connection(ws) {
   
   ws.on('close', function close(){
     console.log('Closed connection!');
-    outstream.end(); // should flush buffer before closing file
+    // WAV header is written here, because it contains total length
+    outstream.end(); // this flushes buffer before closing file
+    
+    // WAV conversion is just for convenience.
+    let conversion_command = `sox -r 44100 -e floating-point -b 32 -c 1 -t raw ${filename} ${filenamebase}.wav`;
+    exec(conversion_command, function(err, stdout, stderr){
+      console.log('Converting RAW to WAV');
+      if (error) {
+        console.error(`exec error: ${error}`);
+        return;
+      }
+      console.log(`stdout: ${stdout}`);
+      console.log(`stderr: ${stderr}`);
+    })
   })
-  
   //setInterval(function(){ws.send('ping!')},2000)
 });
 
