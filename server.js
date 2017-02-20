@@ -1,7 +1,6 @@
 'use strict';
 
 // server: consumes binary stream and writes it to a file.
-// May write a wav header in the future or something
 
 const WebSocket = require('ws');
 const fs = require('fs'); // don't really need to import this tho...
@@ -13,9 +12,6 @@ const wss = new WebSocket.Server({
   port: 8080
 });
 
-// Connect: Make new file
-// Message: Write to file (ignore ordering for now!)
-// Close: Flush + close file
 wss.on('connection', function connection(ws) {
   // If we wanted to communicate audio info (channels, bitrate etc) we would do it here
   // For now, we assume 44.1kHz/float32/mono
