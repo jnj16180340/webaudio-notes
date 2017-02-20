@@ -60,6 +60,8 @@ wss.on('connection', function connection(ws) {
  });
  
  // send binary data
+ // these are both written as expected
  socket.send(new Float32Array([1,2,3,4,5,6,7,8,9,10]))
+ socket.send(new Uint8Array([1,2,3,4,5,6,7,8,9,10]))
 
 */

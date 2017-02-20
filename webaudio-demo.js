@@ -2,14 +2,48 @@ const useMicrophone = false; // use mic input
 const useOscillator = true; // use linear(time) frequency sweep sine wave
 const useConstant = false; // use [c, c, c...]
 const useMonotonic = false; // use sawtooth [-1...1] with period equal to buffer length
+const useWebsocket = true; // send data to server
+
+var audioContext;
+audioContext = new AudioContext();
 
 function myPCMFilterFunction(inputSample) {
   var noiseSample = Math.random() * 2 - 1;
   return inputSample + noiseSample * 0.1;  // For example, add noise samples.
 }
 
-var audioContext;
-audioContext = new AudioContext();
+var teeStreamNode;
+if(useWebsocket){
+  // is this in global scope...
+  // WRONG LOCATION
+  // should be defined in a node.
+  var socket = new WebSocket('ws://localhost:8080');
+  
+  socket.addEventListener('open', function (event) {
+    console.log('Connected to server!');
+    //socket.send('Hello Server!');
+  });
+  
+  //socket.addEventListener('message', function (event) {
+  //  console.log('Message from server', event.data);
+  //});
+  
+  var bufferSize = 4096;
+  teeStreamNode = audioContext.createScriptProcessor(bufferSize, 1, 1);
+  teeStreamNode.onaudioprocess = function(e) {
+    // this just ignores any extra channels... okay
+    var input = e.inputBuffer.getChannelData(0);
+    var output = e.outputBuffer.getChannelData(0);
+    // might need to copy to an intermediate typedarray before streaming out
+    //output = input; // doesn't work, we need to copy values explicitly
+    for (var i = 0; i < bufferSize; i++) {
+      // Modify the input and send it to the output.
+      output[i] = myPCMFilterFunction(input[i]);
+    }
+    socket.send(new Float32Array(input));
+  }
+  
+}
 
 
 // If the coimparison operation isn't slow, we could use the strategy of
@@ -79,6 +113,7 @@ var errorCallback = function(err){
   console.log(err.name + ": " + err.message);
 }
 
+/*
 if(useMicrophone){
   var mediaConstraints = {audio: true}; 
   // new-style promise based getUserMedia
@@ -93,6 +128,7 @@ if(useMicrophone){
   })
   .catch(errorCallback);
 }
+*/
 
 if(useOscillator){
   // do crap
@@ -103,9 +139,10 @@ if(useOscillator){
   osc.detune = 0;
   // osc.setPeriodicWave(piff) // for wavetable synthesis
   
-  osc.connect(myPCMProcessingNode);
-  // do connections have to be set up in order?
-  myPCMProcessingNode.connect(audioContext.destination);
+  //osc.connect(myPCMProcessingNode);
+  //myPCMProcessingNode.connect(audioContext.destination);
+  osc.connect(teeStreamNode);
+  teeStreamNode.connect(audioContext.destination);
   
   // Frequency sweep 0...880Hz
   
