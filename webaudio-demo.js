@@ -48,8 +48,8 @@ if(useWebsocket){
 
 // Create a pcm processing "node" for the filter graph, this is a dummy that adds a little bit of noise
 var bufferSize = 4096;
-var myPCMProcessingNode = audioContext.createScriptProcessor(bufferSize, 1, 1);
-myPCMProcessingNode.onaudioprocess = function(e) {
+var addNoiseNode = audioContext.createScriptProcessor(bufferSize, 1, 1);
+addNoiseNode.onaudioprocess = function(e) {
   // this just ignores any extra channels... okay
   var input = e.inputBuffer.getChannelData(0);
   var output = e.outputBuffer.getChannelData(0);
@@ -63,22 +63,22 @@ var errorCallback = function(err){
   console.log(err.name + ": " + err.message);
 }
 
-/*
+
 if(useMicrophone){
   var mediaConstraints = {audio: true}; 
   // new-style promise based getUserMedia
   navigator.mediaDevices.getUserMedia(mediaConstraints)
   .then(function(stream){
-    // microphone -> myPCMProcessingNode -> destination.
+    // microphone -> addNoiseNode -> destination.
     var microphone = audioContext.createMediaStreamSource(stream);
-    microphone.connect(myPCMProcessingNode);
+    microphone.connect(addNoiseNode);
     // destination of audioContext is set automatically (in this case)
-    myPCMProcessingNode.connect(audioContext.destination);
+    addNoiseNode.connect(audioContext.destination);
     //microphone.start(0);
   })
   .catch(errorCallback);
 }
-*/
+
 
 if(useOscillator){
   // do crap
@@ -89,8 +89,8 @@ if(useOscillator){
   osc.detune = 0;
   // osc.setPeriodicWave(piff) // for wavetable synthesis
   
-  //osc.connect(myPCMProcessingNode);
-  //myPCMProcessingNode.connect(audioContext.destination);
+  //osc.connect(addNoiseNode);
+  //addNoiseNode.connect(audioContext.destination);
   osc.connect(teeStreamNode);
   teeStreamNode.connect(audioContext.destination);
   
