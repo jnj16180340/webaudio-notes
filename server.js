@@ -46,7 +46,7 @@ wss.on('connection', function connection(ws) {
     let conversion_command = `sox -r 44100 -e floating-point -b 32 -c 1 -t raw ${filename} ${filenamebase}.wav`;
     exec(conversion_command, function(err, stdout, stderr){
       console.log('Converting RAW to WAV');
-      if (error) {
+      if (err) {
         console.error(`exec error: ${error}`);
         return;
       }
