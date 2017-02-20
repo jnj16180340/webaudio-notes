@@ -14,8 +14,6 @@
     - It's supported by Chrome and Firefox
     - SEE https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API/Using_the_MediaStream_Recording_API
 
-Audacity supports F32 and I16 wav...
-
 Let's go with (2) for the sake of simple disk writes.
 
 We can only interact with the WebAudio stream from a ScriptProcessorNode, which processes stuff in discrete (time-domain) chunks.

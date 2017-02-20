@@ -15,34 +15,32 @@ const wss = new WebSocket.Server({
 // Connect: Make new file
 // Message: Write to file (ignore ordering for now!)
 // Close: Flush + close file
-
-// copypaste from docs
 wss.on('connection', function connection(ws) {
   console.log('New connection');
-  let filename = Date.now().toString(); // ms timestamp
+  let filename = `${Date.now().toString()}.raw`; // ms timestamp
   
-  // create a readstream to buffer incoming data
-  // unless ws handles this already?? I think it does.
-  // If not, we'll have to implement our own stream.Readable derivative
   // Character encoding is important. fs defaults to utf-8
   let outstream = fs.createWriteStream(filename, {flags:'w'});
+  // we could write a wav header here, or wait until the end
   // we could put writing defs, on message defs inside outstream.on('open', fn...) callback
+  outstream.on('open', function(){
+    console.log(`Opened file ${filename}`);
+  })
   outstream.on('close', function(){
-    console.log('Closed file!');
+    console.log(`Closed file ${filename}`);
   })
   
   ws.on('message', function incoming(message){
-    console.log('received: %s', message);
+    //console.log('received: %s', message);
     outstream.write(message);
   });
   
   ws.on('close', function close(){
     console.log('Closed connection!');
     outstream.end(); // should flush buffer before closing file
-    
   })
   
-  setInterval(function(){ws.send('ping!')},2000)
+  //setInterval(function(){ws.send('ping!')},2000)
 });
 
 // On client:
@@ -63,5 +61,5 @@ wss.on('connection', function connection(ws) {
  // these are both written as expected
  socket.send(new Float32Array([1,2,3,4,5,6,7,8,9,10]))
  socket.send(new Uint8Array([1,2,3,4,5,6,7,8,9,10]))
-
+ socket.send(new Int8Array([1,2,3,4,5,6,7,8,9,10]))
 */
