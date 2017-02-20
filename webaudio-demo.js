@@ -1,5 +1,7 @@
-const useMicrophone = false;
-const useOscillator = true;
+const useMicrophone = false; // use mic input
+const useOscillator = true; // use linear(time) frequency sweep sine wave
+const useConstant = false; // use [c, c, c...]
+const useMonotonic = false; // use sawtooth [-1...1] with period equal to buffer length
 
 function myPCMFilterFunction(inputSample) {
   var noiseSample = Math.random() * 2 - 1;
@@ -8,6 +10,10 @@ function myPCMFilterFunction(inputSample) {
 
 var audioContext;
 audioContext = new AudioContext();
+
+
+// If the coimparison operation isn't slow, we could use the strategy of
+// http://watson-developer-cloud.github.io/speech-javascript-sdk/master/speech-to-text_webaudio-l16-stream.js.html
 
 // SEE http://jsperf.com/float32-to-int16/2
 function F32toUI16(input){
@@ -119,4 +125,12 @@ if(useOscillator){
   // ALL SOURCES MUST BE STARTED
   lfo.start(); // must be called
   osc.start(); // must be called
+}
+
+if(useMonotonic){
+  throw new Error('monotonic sweep not implemented yet');
+}
+
+if(useConstant){
+  throw new Error('constant audio not implemented yet');
 }

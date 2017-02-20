@@ -9,6 +9,10 @@
 2. Record to disk using separate stream processing server (Node, Elixir etc)
     - More similar to what CloudSpeech sees
     - Easier to send stuff to cloudspeech
+    
+3. MediaRecorder API
+    - It's supported by Chrome and Firefox
+    - SEE https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API/Using_the_MediaStream_Recording_API
 
 Audacity supports F32 and I16 wav...
 
@@ -47,6 +51,9 @@ We can only interact with the WebAudio stream from a ScriptProcessorNode, which 
 - Amplitude range of Float32 audio data is **[-1,1]**
 - Map [-1,1] -> [0...65535]. Is WebAudio [-1,1] or [-1,1)?
 - See http://jsperf.com/float32-to-int16/2
+
+- Streaming over websockets: See http://blog.mgechev.com/2015/02/06/parsing-binary-protocol-data-javascript-typedarrays-blobs/
+- https://www.npmjs.com/package/websocket-stream
 
     
 ### Google CloudSpeech
