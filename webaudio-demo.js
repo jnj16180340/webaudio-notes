@@ -1,5 +1,5 @@
-const useMicrophone = false; // use mic input
-const useOscillator = true; // use linear(time) frequency sweep sine wave
+const useMicrophone = true; // use mic input
+const useOscillator = false; // use linear(time) frequency sweep sine wave
 const useConstant = false; // use [c, c, c...]
 const useMonotonic = false; // use sawtooth [-1...1] with period equal to buffer length
 const useWebsocket = true; // send data to server
@@ -9,10 +9,12 @@ const bufferSize = 4096; // for ScriptProcessor nodes
 var sources = []; // all the audio sources that will need to be start()-ed
 var sourceNode; // microphone, oscillator, ...
 var intermediateNode; // this is the node in the middle of the filter graph
+var dstNode;
 
 // If this was in production, we would check for AudioContext support here
 var audioContext;
 audioContext = new AudioContext();
+dstNode = audioContext.destination;
 
 // noise function
 function myPCMFilterFunction(inputSample){
@@ -32,6 +34,7 @@ addNoiseNode.onaudioprocess = function(e){
   }
 }
 
+// This should be the "first" promise, and source setup should be then-ned
 if(useWebsocket){
   // connect to server
   var socket = new WebSocket('ws://localhost:8080');
@@ -75,66 +78,74 @@ if(useMicrophone){
   // new-style promise based getUserMedia
   navigator.mediaDevices.getUserMedia(mediaConstraints)
   .then(function(stream){
-    // microphone -> addNoiseNode -> destination.
+    return new Promise(function(resolve,reject){
     let microphone = audioContext.createMediaStreamSource(stream);
     sourceNode = microphone;
     sources.push(sourceNode);
-    //microphone.connect(intermediateNode);
-    // destination of audioContext is set automatically (in this case)
-    //intermediateNode.connect(audioContext.destination);
-    //microphone.start();
+    resolve();
+    })
   })
-  .catch(errorCallback);
+  .catch(errorCallback)
+  .then(runAudioGraph)
 }
 
-
 if(useOscillator){
-  let osc = audioContext.createOscillator();
-  // we could replace this with new OscillatorNode(params)
-  osc.type = 'sine';
-  osc.frequency.value = 440;
-  osc.detune = 0;
-  
-  //osc.connect(intermediateNode);
-  //intermediateNode.connect(audioContext.destination);
-  
-  // Frequency sweep 0...880Hz
-  
-  // WebAudio automation does not work inside setTimeout events
-  //e.g. osc.frequency.linearRampToValueAtTime(880,2);
-  
-  // We can connect oscillator node TO A PARAMETER?!
-  let lfo = audioContext.createOscillator();
-  lfo.type='sawtooth';
-  lfo.frequency.value = 0.2;
-  // Oscillators go from -1 to 1; scale its output
-  let lfoGain = audioContext.createGain();
-  lfoGain.gain.value = 440;
-  lfo.connect(lfoGain);
-  lfoGain.connect(osc.frequency);
-  
-  sourceNode = osc;
-  
-  sources.push(lfo);
-  sources.push(sourceNode);
-  
-  // ALL SOURCES MUST BE STARTED
-  //lfo.start(); // must be called
-  //osc.start(); // must be called
+  new Promise(function(resolve,reject){
+    let osc = audioContext.createOscillator();
+    // we could replace this with new OscillatorNode(params)
+    osc.type = 'sine';
+    osc.frequency.value = 440;
+    osc.detune = 0;
+    
+    //osc.connect(intermediateNode);
+    //intermediateNode.connect(audioContext.destination);
+    
+    // Frequency sweep 0...880Hz
+    
+    // WebAudio automation does not work inside setTimeout events
+    //e.g. osc.frequency.linearRampToValueAtTime(880,2);
+    
+    // We can connect oscillator node TO A PARAMETER?!
+    let lfo = audioContext.createOscillator();
+    lfo.type='sawtooth';
+    lfo.frequency.value = 0.2;
+    // Oscillators go from -1 to 1; scale its output
+    let lfoGain = audioContext.createGain();
+    lfoGain.gain.value = 440;
+    lfo.connect(lfoGain);
+    lfoGain.connect(osc.frequency);
+    
+    sourceNode = osc;
+    // ALL SOURCES MUST BE STARTED
+    sources.push(lfo);
+    sources.push(sourceNode);
+    
+    resolve();
+  })
+  .catch(errorCallback)
+  .then(runAudioGraph)
 }
 
 if(useMonotonic){
-  throw new Error('monotonic sweep not implemented yet');
+  new Promise(function(resolve,reject){
+    reject('monotonic sweep not implemented yet');
+  })
+  .then(runAudioGraph)
 }
 
 if(useConstant){
-  throw new Error('constant "audio" not implemented yet');
+  new Promise(function(resolve,reject){
+    reject('constant "audio" not implemented yet');
+  })
+  .then(runAudioGraph)
 }
 
-// Build the filter graph, start things, etc.
-// We assume topology: Source -> ScriptProcessorNode -> Destination
-sourceNode.connect(intermediateNode);
-intermediateNode.connect(audioContext.destination);
-for(i in sources){
-  sources[i].start();
+function runAudioGraph(){
+  // Build the filter graph, start things, etc.
+  // We assume topology: Source -> ScriptProcessorNode -> Destination
+  sourceNode.connect(intermediateNode);
+  intermediateNode.connect(dstNode);
+  for(i in sources){
+    sources[i].start();
+  }
 }
