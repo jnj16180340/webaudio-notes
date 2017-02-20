@@ -4,12 +4,31 @@ const useConstant = false; // use [c, c, c...]
 const useMonotonic = false; // use sawtooth [-1...1] with period equal to buffer length
 const useWebsocket = true; // send data to server
 
+const bufferSize = 4096; // for ScriptProcessor nodes
+
+var sources = []; // all the audio sources that will need to be start()-ed
+var intermediateNode; // this is the node in the middle of the filter graph
+
+// If this was in production, we would check for AudioContext support here
 var audioContext;
 audioContext = new AudioContext();
 
+// noise function
 function myPCMFilterFunction(inputSample) {
   var noiseSample = Math.random() * 2 - 1;
   return inputSample + noiseSample * 0.1;  // For example, add noise samples.
+}
+
+// Create a pcm processing "node" for the filter graph, this is a dummy that adds a little bit of noise
+var addNoiseNode = audioContext.createScriptProcessor(bufferSize, 1, 1);
+addNoiseNode.onaudioprocess = function(e) {
+  // this just ignores any extra channels... okay
+  var input = e.inputBuffer.getChannelData(0);
+  var output = e.outputBuffer.getChannelData(0);
+  for (var i = 0; i < bufferSize; i++) {
+    // Modify the input and send it to the output.
+    output[i] = myPCMFilterFunction(input[i]);
+  }
 }
 
 var teeStreamNode;
@@ -28,8 +47,7 @@ if(useWebsocket){
   //  console.log('Message from server', event.data);
   //});
   
-  var bufferSize = 4096;
-  teeStreamNode = audioContext.createScriptProcessor(bufferSize, 1, 1);
+  let teeStreamNode = audioContext.createScriptProcessor(bufferSize, 1, 1);
   teeStreamNode.onaudioprocess = function(e) {
     // this just ignores any extra channels... okay
     // does this node make webaudio downmix everything?
@@ -43,20 +61,9 @@ if(useWebsocket){
     }
     socket.send(new Float32Array(input));
   }
-  
-}
-
-// Create a pcm processing "node" for the filter graph, this is a dummy that adds a little bit of noise
-var bufferSize = 4096;
-var addNoiseNode = audioContext.createScriptProcessor(bufferSize, 1, 1);
-addNoiseNode.onaudioprocess = function(e) {
-  // this just ignores any extra channels... okay
-  var input = e.inputBuffer.getChannelData(0);
-  var output = e.outputBuffer.getChannelData(0);
-  for (var i = 0; i < bufferSize; i++) {
-    // Modify the input and send it to the output.
-    output[i] = myPCMFilterFunction(input[i]);
-  }
+  intermediateNode = teeStreamNode;
+} else{
+  intermediateNode = addNoiseNode;
 }
 
 var errorCallback = function(err){
@@ -71,9 +78,9 @@ if(useMicrophone){
   .then(function(stream){
     // microphone -> addNoiseNode -> destination.
     var microphone = audioContext.createMediaStreamSource(stream);
-    microphone.connect(addNoiseNode);
+    microphone.connect(intermediateNode);
     // destination of audioContext is set automatically (in this case)
-    addNoiseNode.connect(audioContext.destination);
+    intermediateNode.connect(audioContext.destination);
     //microphone.start(0);
   })
   .catch(errorCallback);
@@ -91,8 +98,8 @@ if(useOscillator){
   
   //osc.connect(addNoiseNode);
   //addNoiseNode.connect(audioContext.destination);
-  osc.connect(teeStreamNode);
-  teeStreamNode.connect(audioContext.destination);
+  osc.connect(intermediateNode);
+  intermediateNode.connect(audioContext.destination);
   
   // Frequency sweep 0...880Hz
   
@@ -121,3 +128,8 @@ if(useMonotonic){
 if(useConstant){
   throw new Error('constant audio not implemented yet');
 }
+
+// Build the filter graph, start things, etc.
+// We assume topology: Source -> ScriptProcessorNode -> Destination
+
+
