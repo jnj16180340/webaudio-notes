@@ -5,6 +5,7 @@ const useMonotonic = false; // use sawtooth [-1...1] with period equal to buffer
 const useWebsocket = true; // send data to server
 
 const bufferSize = 4096; // for ScriptProcessor nodes
+var bitrate; // of the WebAudio context; only the browser can set this
 
 var sources = []; // all the audio sources that will need to be start()-ed
 var sourceNode; // microphone, oscillator, ...
@@ -80,6 +81,7 @@ if(useMicrophone){
   .then(function(stream){
     return new Promise(function(resolve,reject){
     let microphone = audioContext.createMediaStreamSource(stream);
+    microphone.start = function(){console.log('dummy-starting mic node')};
     sourceNode = microphone;
     sources.push(sourceNode);
     resolve();
@@ -146,6 +148,11 @@ function runAudioGraph(){
   sourceNode.connect(intermediateNode);
   intermediateNode.connect(dstNode);
   for(i in sources){
+    // if this is a microphone, it doesn't have a start() !!!
+    // because mic is AudioNode (connect, disconnect) instead of
+    // AudioScheduledSourceNode (start, stop)
     sources[i].start();
   }
+  bitrate = audioContext.sampleRate;
+  console.log(`Sample rate is ${bitrate}`);
 }
