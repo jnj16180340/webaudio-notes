@@ -1,3 +1,4 @@
+const useFile = false; // use a pre-recorded file
 const useMicrophone = true; // use mic input
 const useOscillator = false; // use linear(time) frequency sweep sine wave
 const useConstant = false; // use [c, c, c...]

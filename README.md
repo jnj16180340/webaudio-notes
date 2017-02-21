@@ -81,4 +81,9 @@ We can only interact with the WebAudio stream from a ScriptProcessorNode, which 
 `StreamingRecognize`: Stream audio + receive streamed transcription. **This is the one we want.**
 
 ### FFR
+Websockets/node stream adapter
 - https://www.npmjs.com/package/websocket-stream
+
+Node wrappers around `sox` for easy transcoding  
+- https://www.npmjs.com/package/sox-stream
+- https://www.npmjs.com/package/sox
