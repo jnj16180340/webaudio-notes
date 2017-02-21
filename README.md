@@ -72,8 +72,8 @@ We can only interact with the WebAudio stream from a ScriptProcessorNode, which 
 | `AMR` | Adaptive Multi-Rate Narrowband codec. sample_rate must be 8000 Hz. |  |
 | `AMR_WB` | 	Adaptive Multi-Rate Wideband codec. sample_rate must be 16000 Hz. |  |
 
-[SEE Encoding](https://cloud.google.com/speech/docs/encoding)
-[SEE dox](https://cloud.google.com/speech/docs/)
-`AsyncRecognize`: "Long running operation", probably most useful for offline transcription of long audio pieces (limited to 80', sync/stream limited to 1'). Pass b64 encoded raw audio data OR file stored in GoogleCloudStorage
-`SyncRecognize`: Functionally similar to Async, but supports more encodings + less audio time
+[SEE Encoding](https://cloud.google.com/speech/docs/encoding)  
+[SEE dox](https://cloud.google.com/speech/docs/)  
+`AsyncRecognize`: "Long running operation", probably most useful for offline transcription of long audio pieces (limited to 80', sync/stream limited to 1'). Pass b64 encoded raw audio data OR file stored in GoogleCloudStorage  
+`SyncRecognize`: Functionally similar to Async, but supports more encodings + less audio time  
 `StreamingRecognize`: Stream audio + receive streamed transcription. **This is the one we want.**
