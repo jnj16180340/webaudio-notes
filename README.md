@@ -33,6 +33,8 @@ We can only interact with the WebAudio stream from a ScriptProcessorNode, which 
 - If we set 2 channels where there are really 1, it sounds octave-doubled.
 - Instead of writing wav headers by hand/using crappy node modules, let's use sox:
 - `sox -r 44100 -e floating-point -b 32 -c 1 -t raw 1487626939167.raw 1487626939167.wav`
+- You can also specify other params such as endian order...
+- `play --channels=1 --bits=16 --rate=16000 --encoding=signed-integer --endian=little audio.raw`
 
 - LPCM16 `WAV` files are just raw LPCM16 audio data prepended with a header. Add/strip this header as necessary.
     - Find out bitrate, sampling rate etc. of stream
