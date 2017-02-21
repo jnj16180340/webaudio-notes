@@ -2,18 +2,15 @@
 
 // multiserver: runs a bunch of server.js processes all sharing one port
 
-// Does terminating this leave a whold bunch of prphaned node processes...
 const cluster = require('cluster');
+// this could be tweaked knowing that sox will be called as a subprocess
 const nproc = require('os').cpus().length;
 
 if(cluster.isMaster){
   
   function cleanup(code){
     // kill child workers
-    console.warn('Exiting. Terminating child workers...');
-    //for(let i=0, nw=workers.length; i<nw; i++){
-    //  workers[i].kill();
-    //}
+    console.log('Exiting. Terminating child workers...');
     for(let i in cluster.workers){
       cluster.workers[i].kill();
     }
@@ -39,7 +36,7 @@ if(cluster.isMaster){
   });
   
   cluster.on('exit', function(worker, code, signal){
-    console.log(`Child ${worker.id} died.`)
+    console.log(`Child ${worker.id} died.`);
   });
   
   console.log('Forking children');
