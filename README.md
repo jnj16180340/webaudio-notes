@@ -14,7 +14,7 @@
     - It's supported by Chrome and Firefox
     - SEE https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API/Using_the_MediaStream_Recording_API
 
-Let's go with (2) for the sake of simple disk writes.
+Let's go with (2) for the sake of simple disk writes and GoogleSpeech integration
 
 We can only interact with the WebAudio stream from a ScriptProcessorNode, which processes stuff in discrete (time-domain) chunks.
 
@@ -77,3 +77,6 @@ We can only interact with the WebAudio stream from a ScriptProcessorNode, which 
 `AsyncRecognize`: "Long running operation", probably most useful for offline transcription of long audio pieces (limited to 80', sync/stream limited to 1'). Pass b64 encoded raw audio data OR file stored in GoogleCloudStorage  
 `SyncRecognize`: Functionally similar to Async, but supports more encodings + less audio time  
 `StreamingRecognize`: Stream audio + receive streamed transcription. **This is the one we want.**
+
+### FFR
+- https://www.npmjs.com/package/websocket-stream
