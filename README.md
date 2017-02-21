@@ -27,14 +27,26 @@ We can only interact with the WebAudio stream from a ScriptProcessorNode, which 
 
 ### Audio encoding
 
+SEE http://sox.sourceforge.net/AudioFormats.html
+
+Playing msytery formats:
 - We can play raw (headerless) audio with `sox`
 - Use `play` instead of `sox -d` because it's easy to overwrite files!
 - `play -r 44100 -e floating-point -b 32 -c 1 -t raw ./1487623877259`
 - If we set 2 channels where there are really 1, it sounds octave-doubled.
+
+Writing WAV headers to raw audio of known format:
 - Instead of writing wav headers by hand/using crappy node modules, let's use sox:
 - `sox -r 44100 -e floating-point -b 32 -c 1 -t raw 1487626939167.raw 1487626939167.wav`
 - You can also specify other params such as endian order...
 - `play --channels=1 --bits=16 --rate=16000 --encoding=signed-integer --endian=little audio.raw`
+
+Transforming audio with `sox`:
+- From WAV specify new format after input filename 
+- Resample: `sox bstheme-44k-f32.wav -r 8000 -e floating-point -b 32 -c 1 -d`
+- Reformat: `sox bstheme-44k-f32.wav -r 44100 -e unsigned-integer -b 8 -c 1 -d`
+- UI16 isn't a thing
+
 
 - LPCM16 `WAV` files are just raw LPCM16 audio data prepended with a header. Add/strip this header as necessary.
     - Find out bitrate, sampling rate etc. of stream
