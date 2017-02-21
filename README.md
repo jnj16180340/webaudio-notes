@@ -42,10 +42,11 @@ Writing WAV headers to raw audio of known format:
 - `play --channels=1 --bits=16 --rate=16000 --encoding=signed-integer --endian=little audio.raw`
 
 Transforming audio with `sox`:
-- From WAV specify new format after input filename 
+- From WAV specify new format after input filename. Replace `-d` with output file name.
 - Resample: `sox bstheme-44k-f32.wav -r 8000 -e floating-point -b 32 -c 1 -d`
 - Reformat: `sox bstheme-44k-f32.wav -r 44100 -e unsigned-integer -b 8 -c 1 -d`
-- UI16 isn't a thing
+- 24-bit FLAC is supported by CloudSpeech streaming. Specifying un/signed/integer/float in the encoder causes trouble.
+- `sox bstheme-44k-f32.wav -r 44100  -b 24 -c 1 -C 8 bstheme-44k-i24-c8.flac`
 
 
 - LPCM16 `WAV` files are just raw LPCM16 audio data prepended with a header. Add/strip this header as necessary.
